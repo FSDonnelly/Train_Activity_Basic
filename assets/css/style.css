@@ -1,0 +1,11 @@
+
+#train-table th,
+td {
+  display: inline-block;
+  width: 16.575%;
+}
+
+#card-header {
+    background-color: blue;
+    color: white;
+}
