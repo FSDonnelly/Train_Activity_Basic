@@ -1,11 +1,18 @@
 
-#train-table th,
-td {
-  display: inline-block;
-  width: 16.575%;
+.jumbotron {
+  color: #fff;
+  background-position-y: 10%;
+  color: #fff;
+  background-color: #800000;
 }
 
-#card-header {
-    background-color: blue;
-    color: white;
+div.panel-body {
+  background-image: url('../images/express.jpg');
+  color: #fff;
+}
+
+.btn-primary {
+  background-color: #800000;
+  border-color: #fff;
+  font-weight: bold;
 }

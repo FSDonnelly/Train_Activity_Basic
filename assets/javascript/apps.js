@@ -1,4 +1,6 @@
-var config = {
+$(document).ready(function () {
+
+  var config = {
     apiKey: "AIzaSyALNlv3eJVbxHTpmmUxZyouj6v0OmL6ngQ",
     authDomain: "train-activity-basic-f06b3.firebaseapp.com",
     databaseURL: "https://train-activity-basic-f06b3.firebaseio.com",
@@ -9,51 +11,70 @@ var config = {
   firebase.initializeApp(config);
 
   // Create a variable to reference the database.
-var database = firebase.database();
+  var database = firebase.database();
 
-// Initial Values
-var name = "";
-var destination = "";
-var first= 0;
-var frequency = 0;
+  // Capture Button Click
+  $("#addTrain").on("click", function (event) {
+    event.preventDefault();
 
-// Capture Button Click
-$("#add-train-btn").on("click", function (event) {
-  event.preventDefault();
-
-  // Grabbed values from text-boxes
-  name = $("#train-name-input").val().trim();
-  destination = $("#destination-input").val().trim();
-  first= $("#first-train-input").val().trim();
-  frequency = $("#frequency-input").val().trim();
+    // Grabbed values from text boxes
+    var trainName = $("#trainName").val().trim();
+    var destination = $("#destination").val().trim();
+    var firstTrain = $("#firstTrain").val().trim();
+    var freq = $("#interval").val().trim();
 
     // Code for handling the push
     database.ref().push({
-        name: name,
-        destination: destination,
-        first: first,
-        frequency: frequency,
-        dateAdded: firebase.database.ServerValue.TIMESTAMP
-      });
-});
-database.ref().on("child_added", function (snapshot) {
-    // storing the snapshot.val() in a variable for convenience
-    var sv = snapshot.val();
-
-    // Console.loging the last user's data
-    // console.log(sv.name);
-    // console.log(sv.destination);
-    // console.log(sv.first-train);
-    // console.log(sv.frequency);
-
-    // Change the HTML to reflect
-    // $("#train-name-input").text(sv.name);
-    // $("#destination-input").text(sv.destination);
-    // $("#age-display").text(sv.first-train);
-    // $("#comment-display").text(sv.frequency);
-    
-    // Handle the errors
-  }, function (errorObject) {
-    console.log("Errors handled: " + errorObject.code);
+      trainName: trainName,
+      destination: destination,
+      firstTrain: firstTrain,
+      frequency: freq
+    });
   });
 
+
+  // Firebase watcher + initial loader HINT: This code behaves similarly to .on("value")
+  database.ref().on("child_added", function (childSnapshot) {
+
+    var newTrain = childSnapshot.val().trainName;
+    var newLocation = childSnapshot.val().destination;
+    var newFirstTrain = childSnapshot.val().firstTrain;
+    var newFreq = childSnapshot.val().frequency;
+
+    // First Time (pushed back 1 year to make sure it comes before current time)
+    var startTimeConverted = moment(newFirstTrain, "hh:mm").subtract(1, "years");
+
+    // Current Time
+    var currentTime = moment();
+
+    // Difference between the times
+    var diffTime = moment().diff(moment(startTimeConverted), "minutes");
+
+    // Time apart (remainder)
+    var tRemainder = diffTime % newFreq;
+
+    // Minute(s) Until Train
+    var tMinutesTillTrain = newFreq - tRemainder;
+
+    // Next Train
+    var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+    var catchTrain = moment(nextTrain).format("HH:mm");
+
+    // Display On Page
+    $("#all-display").append(
+      ' <tr><td>' + newTrain +
+      ' </td><td>' + newLocation +
+      ' </td><td>' + newFreq +
+      ' </td><td>' + catchTrain +
+      ' </td><td>' + tMinutesTillTrain + ' </td></tr>');
+
+    // Clear input fields
+    $("#trainName, #destination, #firstTrain, #interval").val("");
+    return false;
+  },
+    //Handle the errors
+    function (errorObject) {
+      console.log("Errors handled: " + errorObject.code);
+    });
+
+}); //end document ready
